@@ -13,13 +13,13 @@ from datetime import datetime
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': "",
-    'storageBucket': ""
+    'databaseURL': "https://face-recog-196bc-default-rtdb.firebaseio.com/",
+    'storageBucket': "face-recog-196bc.appspot.com"
 })
 
 bucket = storage.bucket()
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4, 480)
 
@@ -49,7 +49,9 @@ imgStudent = []
 
 while True:
     success, img = cap.read()
-
+    if not success:
+        print("Failed to capture image from camera.")
+        break
     imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
     imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
 
