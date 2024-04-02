@@ -13,9 +13,8 @@ firebase_admin.initialize_app(cred, {
     'storageBucket': "face-recog-196bc.appspot.com"
 })
 
-
 # Importing student images
-folderPath = 'Images'
+folderPath = 'Images/'
 pathList = os.listdir(folderPath)
 print(pathList)
 imgList = []
@@ -29,9 +28,6 @@ for path in pathList:
     blob = bucket.blob(fileName)
     blob.upload_from_filename(fileName)
 
-
-    # print(path)
-    # print(os.path.splitext(path)[0])
 print(studentIds)
 
 
@@ -50,7 +46,10 @@ encodeListKnown = findEncodings(imgList)
 encodeListKnownWithIds = [encodeListKnown, studentIds]
 print("Encoding Complete")
 
-file = open("EncodeFile.p", 'wb')
+file = open("EncodeFil.p", 'wb')
 pickle.dump(encodeListKnownWithIds, file)
 file.close()
 print("File Saved")
+
+def encodegenerator():
+    return encodeListKnownWithIds

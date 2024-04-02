@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Times</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .student-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .student-photo {
+            flex: 0 0 150px;
+            margin-right: 20px;
+        }
+        .student-photo img {
+            max-width: 100%;
+            border-radius: 50%;
+        }
+        .student-details {
+            flex: 1;
+        }
+        .student-details h2 {
+            margin-top: 0;
+        }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .attendance-table th, .attendance-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        .attendance-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Attendance Times for Student {{ student_id }}</h1>
+        </div>
+        <div class="student-info">
+            <div class="student-photo">
+                <img src="data:image/png;base64,{{ student_image }}" alt="Student Photo">
+            </div>
+            <div class="student-details">
+                <h2>{{ student_name }}</h2>
+                <p><strong>Major:</strong> {{ student_major }}</p>
+                <p><strong>Year:</strong> {{ student_year }}</p>
+            </div>
+        </div>
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance_time in attendance_times %}
+                    <tr>
+                        <td>{{ attendance_time }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

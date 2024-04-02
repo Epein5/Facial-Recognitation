@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        table {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        img {
+            max-width: 100px;
+            height: auto;
+        }
+
+        .btn {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .register-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #000;
+            background-color: aqua;
+        }
+    </style>
+</head>
+<body>
+    <h1>ADMIN DASHBOARD</h1>
+    <!-- Register button in top right corner -->
+    <a href="/register" class="btn register-btn">Register New Users</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Student Major</th>
+                <th>Student Year</th>
+                <th>Total Attendance</th>
+                <th>Image</th>
+                <th>Attendance Times</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.id }}</td>
+                <td>{{ student.name }}</td>
+                <td>{{ student.major }}</td>
+                <td>{{ student.year }}</td>
+                <td>{{ student.total_attendance }}</td>
+                <td><img src="data:image/png;base64,{{ student.image }}" alt="Student Image"></td>
+                <td><a href="/attendance_times/{{ student.id }}" class="btn">View Attendance Times</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
