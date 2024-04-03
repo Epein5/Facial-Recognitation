@@ -7,7 +7,6 @@ This is a Face Attendance System implemented using Python, OpenCV, face_recognit
 - Register new students with their information and images.
 - Capture attendance using face recognition technology.
 - View attendance records for each student.
-
 ## Setup
 
 1. **Clone the Repository:**
@@ -19,6 +18,14 @@ This is a Face Attendance System implemented using Python, OpenCV, face_recognit
 2. **Set up Firebase:**
    - Create a Firebase project and download the service account key JSON file (`serviceAccountKey.json`).
    - Save the `serviceAccountKey.json` file in the main directory of the project.
+   - Modify the Firebase initialization code in the enire application according to your own Firebase setup. Uncomment the following lines and adjust the configuration:
+     ```python
+      cred = credentials.Certificate("serviceAccountKey.json")
+      firebase_admin.initialize_app(cred, {
+          'databaseURL': "https://your-database-url.firebaseio.com/",
+          'storageBucket': "your-storage-bucket.appspot.com"
+      })
+     ```
 
 3. **Create Image Directory:**
    - Create an empty directory named `Image` in the root directory of the project. This directory will be used to store student images.
@@ -53,6 +60,7 @@ This is a Face Attendance System implemented using Python, OpenCV, face_recognit
 9. **Run the Face Recognition App:**
    - Run the `main.py` script to start the facial recognition application.
    - Use the FastAPI server for user registration and to access the admin dashboard.
+
 
 
 
