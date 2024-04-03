@@ -43,7 +43,14 @@ This is a Face Attendance System implemented using Python, OpenCV, face_recognit
    - Before registering any users, ensure the `data.py` file located inside the `backend` directory is cleared. Remove any existing data and keep the file empty.
    - Your first registration may show an error due to the empty `data.py` file. Remove the trailing comma after the empty dictionary `{}` to resolve the error.
 
-8. **Run the Face Recognition App:**
+8. **Note on Image Upload:**
+   - **Please ensure that uploaded images meet the following criteria:**
+     - Image dimensions: 126 px (width) x 216 px (height).
+     - File format: PNG.
+     - Unique name: The image filename should consist of 5 integers followed by the `.png` extension (e.g., `12345.png`, `23459.png`).
+   - **Failure to meet these criteria may result in the application not functioning correctly.**
+
+9. **Run the Face Recognition App:**
    - Run the `main.py` script to start the facial recognition application.
    - Use the FastAPI server for user registration and to access the admin dashboard.
 
