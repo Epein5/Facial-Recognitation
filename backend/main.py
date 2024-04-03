@@ -23,7 +23,7 @@ firebase_admin.initialize_app(cred, {
 })
 bucket = storage.bucket()
 
-IMAGEDIR =  "../Images/"
+IMAGEDIR =  "../Image/"
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
@@ -43,7 +43,7 @@ async def read_item(request: Request):
             'attendance_times': data.get('attendance_times', [])  # Get attendance times or empty list if not available
         }
         # Fetch image from Firebase Storage and convert to base64
-        blob = bucket.blob(f'Images/{student_id}.png')
+        blob = bucket.blob(f'Image/{student_id}.png')
         img_data = blob.download_as_string()
         img_base64 = base64.b64encode(img_data).decode('utf-8')
         student_info['image'] = img_base64
@@ -67,7 +67,7 @@ async def get_attendance_times(request: Request, student_id: str):
     attendance_times = student_data.get('attendance_times', [])
     
     # Fetch image from Firebase Storage and convert to base64
-    blob = bucket.blob(f'Images/{student_id}.png')
+    blob = bucket.blob(f'Image/{student_id}.png')
     img_data = blob.download_as_string()
     student_image = base64.b64encode(img_data).decode('utf-8')
 
@@ -122,8 +122,9 @@ async def read_item(request: Request):
 @app.post("/run_python_files")
 async def run_python_files():
     try:
-        encodegenerator()
         adddatatodatabase()
+        encodegenerator()
+        
         
         return {"message": "Please go back to Dashboard to see the changes"}
     except Exception as e:

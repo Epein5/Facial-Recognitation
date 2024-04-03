@@ -15,7 +15,7 @@ from data import data
 # })
 def encodegenerator():
     # Importing student images
-    folderPath = '../Images/'
+    folderPath = '../Image/'
     pathList = os.listdir(folderPath)
     print(pathList)
     imgList = []
@@ -24,10 +24,13 @@ def encodegenerator():
         imgList.append(cv2.imread(os.path.join(folderPath, path)))
         studentIds.append(os.path.splitext(path)[0])
 
-        fileName = f'{folderPath}/{path}'
+        # fileName = f'{folderPath}/{path}'
+        fileName = os.path.join(folderPath, path)
         bucket = storage.bucket()
-        blob = bucket.blob(fileName)
+        blob = bucket.blob(f'Image/{path}')
         blob.upload_from_filename(fileName)
+    
+    print(fileName)
 
     print(studentIds)
 
@@ -63,7 +66,10 @@ def adddatatodatabase():
     # })
     ref = db.reference('Student')
     for key, value in data.items():
-        ref.child(key).set(value)
+        # Check if the key already exists
+        if not ref.child(key).get():
+            # If the key doesn't exist, add the data
+            ref.child(key).set(value)
     return "Data added to database"
 
 # def add_item(new_data):

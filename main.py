@@ -11,37 +11,35 @@ from firebase_admin import storage
 import numpy as np
 from datetime import datetime
 
+# Initialize Firebase
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://face-recog-196bc-default-rtdb.firebaseio.com/",
     'storageBucket': "face-recog-196bc.appspot.com"
 })
-
 bucket = storage.bucket()
 
+# Initialize video capture
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4, 480)
 
+# Load background image
 imgBackground = cv2.imread('Resources/background.png')
 
-# Importing the mode images into a list
+# Load mode images
 folderModePath = 'Resources/Modes'
 modePathList = os.listdir(folderModePath)
-imgModeList = []
-for path in modePathList:
-    imgModeList.append(cv2.imread(os.path.join(folderModePath, path)))
-# print(len(imgModeList))
+imgModeList = [cv2.imread(os.path.join(folderModePath, path)) for path in modePathList]
 
-# Load the encoding file
+# Load encoding file
 print("Loading Encode File ...")
-file = open('EncodeFile.p', 'rb')
-encodeListKnownWithIds = pickle.load(file)
-file.close()
+with open('EncodeFile.p', 'rb') as file:
+    encodeListKnownWithIds = pickle.load(file)
 encodeListKnown, studentIds = encodeListKnownWithIds
-# print(studentIds)
 print("Encode File Loaded")
 
+# Main loop
 modeType = 0
 counter = 0
 id = -1
@@ -65,15 +63,10 @@ while True:
         for encodeFace, faceLoc in zip(encodeCurFrame, faceCurFrame):
             matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
             faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
-            # print("matches", matches)
-            # print("faceDis", faceDis)
 
             matchIndex = np.argmin(faceDis)
-            # print("Match Index", matchIndex)
 
             if matches[matchIndex]:
-                # print("Known Face Detected")
-                # print(studentIds[matchIndex])
                 y1, x2, y2, x1 = faceLoc
                 y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
                 bbox = 55 + x1, 162 + y1, x2 - x1, y2 - y1
@@ -93,40 +86,60 @@ while True:
                 studentInfo = db.reference(f'Student/{id}').get()
                 print(studentInfo)
                 # Get the Image from the storage
-                blob = bucket.get_blob(f'Images/{id}.png')
+                blob = bucket.get_blob(f'Image/{id}.png')
                 array = np.frombuffer(blob.download_as_string(), np.uint8)
                 imgStudent = cv2.imdecode(array, cv2.COLOR_BGRA2BGR)
                 # Update data of attendance
-                datetimeObject = datetime.strptime(studentInfo['last_attendance_time'],
-                                                   "%Y-%m-%d %H:%M:%S")
-                secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
-                print(secondsElapsed)
-                if secondsElapsed > 30:
-                    ref = db.reference(f'Student/{id}')
-                    studentInfo['total_attendance'] += 1
-                    ref.child('total_attendance').set(studentInfo['total_attendance'])
-                    ref.child('last_attendance_time').set(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                attendance_times = studentInfo.get('attendance_times', [])
+                if attendance_times:
+                    last_attendance_time = attendance_times[-1]
+                    datetimeObject = datetime.strptime(last_attendance_time, "%Y-%m-%d %H:%M:%S")
+                    secondsElapsed = (datetime.now() - datetimeObject).total_seconds()
+                    print(secondsElapsed)
+                    if secondsElapsed > 5:
+                        attendance_times.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                        ref = db.reference(f'Student/{id}')
+                        ref.update({
+                            'total_attendance': studentInfo['total_attendance'] + 1,
+                            'attendance_times': attendance_times
+                        })
+                        # Save attendance time to file
+                        # with open(f'attendance_times_{id}.txt', 'a') as file:
+                        #     file.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n')
+                    else:
+                        modeType = 3
+                        counter = 0
+                        imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
                 else:
-                    modeType = 3
-                    counter = 0
-                    imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
+                    # First attendance, update both total attendance and attendance times
+                    attendance_times.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                    ref = db.reference(f'Student/{id}')
+                    ref.update({
+                        'total_attendance': studentInfo['total_attendance'] + 1,
+                        'attendance_times': attendance_times
+                    })
+                    # Save attendance time to file
+                    with open(f'attendance_times_{id}.txt', 'a') as file:
+                        file.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n')
+            else:
+                modeType = 3
+                counter = 0
+                imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
 
             if modeType != 3:
 
-                if 10 < counter < 20:
+                if 10 < counter < 100:
                     modeType = 2
 
                 imgBackground[44:44 + 633, 808:808 + 414] = imgModeList[modeType]
 
-                if counter <= 10:
+                if counter <= 100:
                     cv2.putText(imgBackground, str(studentInfo['total_attendance']), (861, 125),
                                 cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 1)
                     cv2.putText(imgBackground, str(studentInfo['major']), (1006, 550),
                                 cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(imgBackground, str(id), (1006, 493),
                                 cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
-                    cv2.putText(imgBackground, str(studentInfo['standing']), (910, 625),
-                                cv2.FONT_HERSHEY_COMPLEX, 0.6, (100, 100, 100), 1)
                     cv2.putText(imgBackground, str(studentInfo['year']), (1025, 625),
                                 cv2.FONT_HERSHEY_COMPLEX, 0.6, (100, 100, 100), 1)
                     cv2.putText(imgBackground, str(studentInfo['starting_year']), (1125, 625),
@@ -137,11 +150,13 @@ while True:
                     cv2.putText(imgBackground, str(studentInfo['name']), (808 + offset, 445),
                                 cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 50), 1)
 
+                    imgStudent = cv2.resize(imgStudent, (216, 216))
                     imgBackground[175:175 + 216, 909:909 + 216] = imgStudent
+
 
                 counter += 1
 
-                if counter >= 20:
+                if counter >= 100:
                     counter = 0
                     modeType = 0
                     studentInfo = []
@@ -150,6 +165,6 @@ while True:
     else:
         modeType = 0
         counter = 0
-    # cv2.imshow("Webcam", img)
+
     cv2.imshow("Face Attendance", imgBackground)
     cv2.waitKey(1)

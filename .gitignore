@@ -1,6 +1,7 @@
 /venv
 serviceAccountKey.json
 /EncodeFile.p
-/Images
+/Image
 /Resources
 /__pycache__
+serviceAccountKey.json
